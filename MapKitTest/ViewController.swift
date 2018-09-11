@@ -27,9 +27,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     func checkLocationAuth() {
         switch CLLocationManager.authorizationStatus() {
-        case .authorizedAlways:
-            break
-        case .authorizedWhenInUse:
+        case .authorizedWhenInUse, .authorizedAlways:
+            mapView.showsUserLocation = true
+            zoomOnUserLocation()
+            locationManager.startUpdatingLocation()
             break
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
@@ -54,13 +55,24 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             showAlert()
         }
     }
+    
+    func zoomOnUserLocation() {
+        if let location = locationManager.location?.coordinate {
+            let region = MKCoordinateRegion.init(center: location, latitudinalMeters: 1000, longitudinalMeters: 1000)
+            mapView.setRegion(region, animated: true)
+        }
+    }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // TODO
+        guard let location = locations.last else { return }
+        let center = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let region = MKCoordinateRegion.init(center: center, latitudinalMeters: 1000, longitudinalMeters: 1000)
+        
+        mapView.setRegion(region, animated: true)
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        // TODO
+        checkLocationAuth()
     }
 
 }
